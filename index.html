@@ -1,0 +1,2010 @@
+
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Medical Admission Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font (Hind Siliguri for Bengali) -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Hind Siliguri', 'sans-serif'],
+                    },
+                    colors: {
+                        medical: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                            800: '#9f1239',
+                            950: '#4c0519',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth transitions */
+        * {
+            transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e11d48;
+            border-radius: 10px;
+        }
+        
+        /* Glassmorphism Classes */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(135deg, #e11d48 0%, #4f46e5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Dynamic Progress Circle */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans min-h-screen transition-colors duration-300">
+
+    <div class="flex min-h-screen overflow-hidden">
+        
+        <!-- ================= SIDEBAR ================= -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 glass-card border-r border-slate-200/50 dark:border-slate-800/50 flex flex-col justify-between transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+            <div>
+                <!-- Brand / Logo Header -->
+                <div class="p-6 border-b border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-gradient-to-tr from-rose-500 to-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-rose-500/20">
+                            <i class="fa-solid fa-heart-pulse text-lg animate-pulse"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-lg text-gradient leading-none block">মেডি-প্রো</span>
+                            <span class="text-xs text-slate-500 dark:text-slate-400">মেডিকেল এডমিশন হাব</span>
+                        </div>
+                    </div>
+                    <button onclick="toggleSidebar()" class="lg:hidden p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Student Information Card -->
+                <div class="p-4 mx-4 my-4 rounded-2xl bg-gradient-to-br from-rose-500/10 to-indigo-500/10 border border-rose-500/20 dark:border-indigo-500/20">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-rose-500 to-rose-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                            এম
+                        </div>
+                        <div class="overflow-hidden">
+                            <h4 class="font-semibold text-sm truncate" id="profile-name">মো: মিজানুর রহমান</h4>
+                            <p class="text-[11px] text-rose-600 dark:text-rose-400 font-medium">সেকেন্ড টাইমার (2nd Timer)</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400">লক্ষ্য: মেডিকেল ভর্তি পরীক্ষা</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="px-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-320px)]">
+                    <button onclick="switchView('overview')" id="nav-overview" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-sm font-medium bg-rose-500 text-white shadow-lg shadow-rose-500/20 active-nav-btn">
+                        <i class="fa-solid fa-chart-pie w-5"></i>
+                        <span>ড্যাশবোর্ড ওভারভিউ</span>
+                    </button>
+                    <button onclick="switchView('subjects')" id="nav-subjects" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50">
+                        <i class="fa-solid fa-book w-5"></i>
+                        <span>বিষয় ও অধ্যায়সমূহ</span>
+                    </button>
+                    <button onclick="switchView('exam')" id="nav-exam" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50">
+                        <i class="fa-solid fa-laptop-code w-5"></i>
+                        <span>AI এমসিকিউ পরীক্ষা</span>
+                    </button>
+                    <button onclick="switchView('tasks')" id="nav-tasks" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50">
+                        <i class="fa-solid fa-calendar-check w-5"></i>
+                        <span>দৈনিক লক্ষ্য ও ক্যালেন্ডার</span>
+                    </button>
+                    <button onclick="switchView('revision')" id="nav-revision" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50">
+                        <i class="fa-solid fa-rotate w-5"></i>
+                        <span>রিভিশন ট্র্যাকার (Loops)</span>
+                    </button>
+                    <button onclick="switchView('analytics')" id="nav-analytics" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50">
+                        <i class="fa-solid fa-chart-line w-5"></i>
+                        <span>অগ্রগতি ও এনালাইটিক্স</span>
+                    </button>
+                    <button onclick="switchView('resources')" id="nav-resources" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50">
+                        <i class="fa-solid fa-circle-info w-5"></i>
+                        <span>সহায়ক গ্যালারি ও নোটস</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-950/30 text-slate-600 dark:text-slate-300">
+                        <i id="theme-icon" class="fa-solid fa-moon"></i>
+                    </button>
+                    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">থিম</span>
+                </div>
+                <div class="text-[10px] text-slate-400 dark:text-slate-500 font-mono font-bold">v3.0 Premium</div>
+            </div>
+        </aside>
+
+        <!-- ================= MAIN CONTENT CONTAINER ================= -->
+        <main class="flex-1 lg:ml-72 min-h-screen p-4 lg:p-8 flex flex-col space-y-6">
+            
+            <!-- HEADER BAR -->
+            <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 lg:p-6 glass-card rounded-3xl">
+                <!-- Mobile Navigation Trigger & Title -->
+                <div class="flex items-center space-x-3">
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white" id="header-view-title">ড্যাশবোর্ড ওভারভিউ</h1>
+                        <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400" id="header-view-subtitle">স্বাগতম মিজানুর রহমান, আজ আপনার পড়াশোনা শুরু করুন!</p>
+                    </div>
+                </div>
+
+                <!-- Countdown & Stats Overview Header -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Countdown Timer to Medical Exam -->
+                    <div class="flex items-center space-x-3 bg-rose-50 dark:bg-rose-950/20 px-4 py-2.5 rounded-2xl border border-rose-200/50 dark:border-rose-900/40">
+                        <i class="fa-solid fa-clock-rotate-left text-rose-500 animate-spin-slow"></i>
+                        <div>
+                            <span class="text-[10px] uppercase text-rose-500 dark:text-rose-400 font-bold block leading-none">ভর্তি পরীক্ষার বাকি</span>
+                            <span class="font-bold text-sm tracking-wide text-rose-600 dark:text-rose-400" id="exam-countdown">লোডিং...</span>
+                        </div>
+                    </div>
+
+                    <!-- Streak Counter -->
+                    <div class="flex items-center space-x-3 bg-amber-50 dark:bg-amber-950/20 px-4 py-2.5 rounded-2xl border border-amber-200/50 dark:border-amber-900/40">
+                        <i class="fa-solid fa-fire text-amber-500"></i>
+                        <div>
+                            <span class="text-[10px] uppercase text-amber-500 dark:text-amber-400 font-bold block leading-none">টানা পড়াশোনা</span>
+                            <span class="font-bold text-sm text-amber-600 dark:text-amber-400" id="header-streak">১২ দিন</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ================= VIEW 1: DASHBOARD OVERVIEW ================= -->
+            <section id="view-overview" class="space-y-6">
+                
+                <!-- Daily Motivation / Success Meter Banner -->
+                <div class="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-r from-rose-500 via-rose-600 to-indigo-700 text-white shadow-xl shadow-rose-500/10">
+                    <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-white/10 rounded-full blur-2xl"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="space-y-2 max-w-2xl">
+                            <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">আজকের অনুপ্রেরণা</span>
+                            <h2 class="text-xl md:text-2xl font-bold leading-snug">"কঠোর অধ্যাবসায় কখনো ব্যর্থ হয় না। সাদা অ্যাপ্রনের স্বপ্ন এবার তোমার হবেই!"</h2>
+                            <p class="text-rose-100 text-xs md:text-sm">প্রতিদিনের টাস্ক সম্পন্ন করে আপনার সাফল্যের সম্ভাবনাকে আরও বাড়িয়ে তুলুন।</p>
+                        </div>
+                        <div class="flex items-center space-x-4 bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/10">
+                            <div class="text-center">
+                                <span class="text-[10px] text-rose-100 uppercase font-bold block">সাফল্যের সম্ভাবনা</span>
+                                <span class="text-2xl font-extrabold" id="success-meter">৮৫%</span>
+                                <div class="w-24 bg-white/20 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                                    <div class="bg-emerald-400 h-full rounded-full" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="text-4xl">🏆</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OVERVIEW CARDS GRID -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <!-- Card 1: Total Subjects -->
+                    <div class="glass-card p-5 rounded-3xl flex items-center space-x-4">
+                        <div class="p-3 bg-indigo-50 dark:bg-indigo-950/50 rounded-2xl text-indigo-500">
+                            <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">মোট বিষয়</span>
+                            <h3 class="text-xl md:text-2xl font-bold" id="card-total-subjects">৯ টি</h3>
+                        </div>
+                    </div>
+                    <!-- Card 2: Total Chapters -->
+                    <div class="glass-card p-5 rounded-3xl flex items-center space-x-4">
+                        <div class="p-3 bg-rose-50 dark:bg-rose-950/50 rounded-2xl text-rose-500">
+                            <i class="fa-solid fa-book-open text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">মোট টপিক/অধ্যায়</span>
+                            <h3 class="text-xl md:text-2xl font-bold" id="card-total-chapters">৮৭ টি</h3>
+                        </div>
+                    </div>
+                    <!-- Card 3: Completed Chapters -->
+                    <div class="glass-card p-5 rounded-3xl flex items-center space-x-4">
+                        <div class="p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-2xl text-emerald-500">
+                            <i class="fa-solid fa-circle-check text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">সম্পন্ন অধ্যায়</span>
+                            <h3 class="text-xl md:text-2xl font-bold" id="card-completed-chapters">০ টি</h3>
+                        </div>
+                    </div>
+                    <!-- Card 4: Pending Chapters -->
+                    <div class="glass-card p-5 rounded-3xl flex items-center space-x-4">
+                        <div class="p-3 bg-amber-50 dark:bg-amber-950/50 rounded-2xl text-amber-500">
+                            <i class="fa-solid fa-hourglass-half text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">বাকি অধ্যায়</span>
+                            <h3 class="text-xl md:text-2xl font-bold" id="card-pending-chapters">৮৭ টি</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECONDARY STATISTICS GRID -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <!-- Card 5: Today's Tasks -->
+                    <div class="glass-card p-5 rounded-3xl flex items-center space-x-4">
+                        <div class="p-3 bg-teal-50 dark:bg-teal-950/50 rounded-2xl text-teal-500">
+                            <i class="fa-solid fa-list-check text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">আজকের কাজ</span>
+                            <h3 class="text-xl md:text-2xl font-bold" id="card-today-tasks">০ টি</h3>
+                        </div>
+                    </div>
+                    <!-- Card 6: Study Hours Counter -->
+                    <div class="glass-card p-5 rounded-3xl flex items-center space-x-4">
+                        <div class="p-3 bg-cyan-50 dark:bg-cyan-950/50 rounded-2xl text-cyan-500">
+                            <i class="fa-solid fa-user-clock text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">মোট পড়ার সময়</span>
+                            <h3 class="text-xl md:text-2xl font-bold" id="card-study-hours">১৪৫ ঘন্টা</h3>
+                        </div>
+                    </div>
+                    <!-- Card 7: Loop 1 Progress -->
+                    <div class="glass-card p-5 rounded-3xl flex items-center space-x-4">
+                        <div class="p-3 bg-pink-50 dark:bg-pink-950/50 rounded-2xl text-pink-500">
+                            <i class="fa-solid fa-circle-notch text-2xl animate-spin-slow"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">লুপ ১ রিভিশন</span>
+                            <h3 class="text-xl md:text-2xl font-bold" id="card-loop1-progress">০%</h3>
+                        </div>
+                    </div>
+                    <!-- Card 8: Overall Completed % -->
+                    <div class="glass-card p-5 rounded-3xl flex items-center space-x-4">
+                        <div class="p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-2xl text-emerald-500">
+                            <i class="fa-solid fa-percent text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">সর্বমোট অগ্রগতি</span>
+                            <h3 class="text-xl md:text-2xl font-bold" id="card-overall-pct">০%</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MAIN INTERACTIVE MODULES FOR HOME -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Ring Progress Visualizer & Completion Ratio -->
+                    <div class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center text-center space-y-4 lg:col-span-1">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">কার্যক্রমের রেশিও এবং অগ্রগতি</h3>
+                        
+                        <!-- Circular Progress Rings -->
+                        <div class="relative w-40 h-40 flex items-center justify-center">
+                            <svg class="w-full h-full">
+                                <circle class="text-slate-200 dark:text-slate-800" stroke-width="12" stroke="currentColor" fill="transparent" r="70" cx="80" cy="80"/>
+                                <circle class="text-rose-500 progress-ring__circle" stroke-width="12" stroke-dasharray="439.8" stroke-dashoffset="439.8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="70" cx="80" cy="80" id="overall-ring-circle"/>
+                            </svg>
+                            <div class="absolute flex flex-col items-center justify-center">
+                                <span class="text-3xl font-extrabold text-gradient" id="overall-ring-text">০%</span>
+                                <span class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold mt-1">সম্পন্ন হয়েছে</span>
+                            </div>
+                        </div>
+
+                        <div class="w-full space-y-2 text-left text-xs text-slate-600 dark:text-slate-400 pt-3 border-t border-slate-200/50 dark:border-slate-800/50">
+                            <div class="flex justify-between">
+                                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>অধ্যায় সম্পূর্ণতা:</span>
+                                <span class="font-bold text-slate-800 dark:text-slate-100" id="ratio-chapters-done">০/৮৭</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>মোট সম্পন্নকৃত সাব-টাস্ক:</span>
+                                <span class="font-bold text-slate-800 dark:text-slate-100" id="ratio-tasks-done">০/৬০৯</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Revision Tracker (Loop 1 & Loop 2 Tracker) -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4 lg:col-span-2">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">রিভিশন লুপ ও প্রিপারেশন ফেইজ</h3>
+                            <span class="text-xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-1 rounded-full">মেডিকেল ভর্তি স্পেশাল</span>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- Loop 1 Progress Bar -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs">
+                                    <span class="font-semibold text-slate-700 dark:text-slate-300">লুপ ১ (মহা-প্রস্তুতি): মাস ১ - ৩ (সব অধ্যায় সম্পন্ন করা)</span>
+                                    <span class="font-bold text-indigo-600 dark:text-indigo-400" id="loop-1-text">০%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+                                    <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full rounded-full transition-all duration-500" style="width: 0%" id="loop-1-bar"></div>
+                                </div>
+                            </div>
+
+                            <!-- Loop 2 Progress Bar -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs">
+                                    <span class="font-semibold text-slate-700 dark:text-slate-300">লুপ ২ (স্পিড রিভিশন): মাস ৪ - ৬ (সম্পূর্ণ সিলেবাস ২য় বার শেষ করা)</span>
+                                    <span class="font-bold text-rose-600 dark:text-rose-400" id="loop-2-text">০%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+                                    <div class="bg-gradient-to-r from-rose-500 to-rose-600 h-full rounded-full transition-all duration-500" style="width: 0%" id="loop-2-bar"></div>
+                                </div>
+                            </div>
+
+                            <!-- Final Loop Progress Bar -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs">
+                                    <span class="font-semibold text-slate-700 dark:text-slate-300">৭ম মাস (এক্সাম ফেজ): ফাইনাল মডেল টেস্ট ও ওএমআর প্র্যাকটিস</span>
+                                    <span class="font-bold text-emerald-600 dark:text-emerald-400" id="loop-final-text">০%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+                                    <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-full transition-all duration-500" style="width: 0%" id="loop-final-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-rose-500/5 border border-rose-500/10 p-3 rounded-2xl flex items-center space-x-3 text-xs text-rose-600 dark:text-rose-400">
+                            <i class="fa-solid fa-circle-info text-base"></i>
+                            <p>যেকোনো অধ্যায়ের ৭টি সাব-টাস্ক সম্পন্ন করলে লুপ ১ সম্পন্ন হবে। ৩য় এবং ৪র্থ বার অধ্যায় পড়লে লুপ ২ এবং ফাইনাল ফেজে মার্কিং বৃদ্ধি পাবে!</p>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ================= VIEW 2: SUBJECTS & CHAPTERS ================= -->
+            <section id="view-subjects" class="hidden space-y-6">
+                <!-- Subject Filters Tab & Chapter Search -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-4 rounded-3xl">
+                    <div class="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl overflow-x-auto max-w-full">
+                        <button onclick="filterSubject('all')" id="subj-tab-all" class="text-xs font-semibold px-4 py-2 rounded-xl transition-all whitespace-nowrap bg-rose-500 text-white shadow-md">সবগুলো</button>
+                        <button onclick="filterSubject('bio1')" id="subj-tab-bio1" class="text-xs font-semibold px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 whitespace-nowrap">উদ্ভিদবিজ্ঞান</button>
+                        <button onclick="filterSubject('bio2')" id="subj-tab-bio2" class="text-xs font-semibold px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 whitespace-nowrap">প্রাণীবিজ্ঞান</button>
+                        <button onclick="filterSubject('chem1')" id="subj-tab-chem1" class="text-xs font-semibold px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 whitespace-nowrap">রসায়ন ১ম</button>
+                        <button onclick="filterSubject('chem2')" id="subj-tab-chem2" class="text-xs font-semibold px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 whitespace-nowrap">রসায়ন ২য়</button>
+                        <button onclick="filterSubject('phy1')" id="subj-tab-phy1" class="text-xs font-semibold px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 whitespace-nowrap">পদার্থ ১ম</button>
+                        <button onclick="filterSubject('phy2')" id="subj-tab-phy2" class="text-xs font-semibold px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 whitespace-nowrap">পদার্থ ২য়</button>
+                        <button onclick="filterSubject('eng')" id="subj-tab-eng" class="text-xs font-semibold px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 whitespace-nowrap">ইংরেজী</button>
+                        <button onclick="filterSubject('gk')" id="subj-tab-gk" class="text-xs font-semibold px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 whitespace-nowrap">জিকে</button>
+                        <button onclick="filterSubject('values')" id="subj-tab-values" class="text-xs font-semibold px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 whitespace-nowrap">মূল্যবোধ</button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative w-full md:w-64">
+                        <input type="text" id="chapter-search" oninput="searchChapters(this.value)" placeholder="অধ্যায় খুঁজুন..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none pl-10">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400"></i>
+                    </div>
+                </div>
+
+                <!-- Chapters List Container (Rendered dynamically) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="chapters-grid">
+                    <!-- Dynamic Loading -->
+                </div>
+            </section>
+
+            <!-- ================= VIEW 3: AI MCQ EXAM SIMULATOR ================= -->
+            <section id="view-exam" class="hidden space-y-6">
+                <!-- Select Chapter for Simulated Exam -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="exam-config-view">
+                    <!-- Config Form -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4 lg:col-span-1">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">পরীক্ষার সেটিংস ও কাস্টমাইজেশন</h3>
+                        <p class="text-xs text-slate-500">আপনার অধ্যায় এবং প্রশ্ন সংখ্যা নির্বাচন করে AI রেডি ডাইনামিক পরীক্ষা শুরু করুন।</p>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1">বিষয় নির্বাচন করুন</label>
+                                <select id="exam-subject" onchange="loadExamChapters(this.value)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                                    <option value="bio1">উদ্ভিদবিজ্ঞান (Biology 1st Paper)</option>
+                                    <option value="bio2">প্রাণীবিজ্ঞান (Biology 2nd Paper)</option>
+                                    <option value="chem1">রসায়ন ১ম পত্র (Chemistry 1st Paper)</option>
+                                    <option value="chem2">রসায়ন ২য় পত্র (Chemistry 2nd Paper)</option>
+                                    <option value="phy1">পদার্থবিজ্ঞান ১ম পত্র (Physics 1st Paper)</option>
+                                    <option value="phy2">পদার্থবিজ্ঞান ২য় পত্র (Physics 2nd Paper)</option>
+                                    <option value="eng">ইংরেজী (English)</option>
+                                    <option value="gk">সাধারণ জ্ঞান (General Knowledge)</option>
+                                    <option value="values">মানবিক মূল্যবোধ (Ethics)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1">অধ্যায় নির্বাচন করুন</label>
+                                <select id="exam-chapter" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                                    <!-- Dynamic Options based on subject -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1">প্রশ্নের পরিমাণ</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button onclick="setExamQuestionsCount(20)" id="qcount-20" class="exam-qcount-btn bg-rose-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all">২০ টি</button>
+                                    <button onclick="setExamQuestionsCount(50)" id="qcount-50" class="exam-qcount-btn bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-2 rounded-xl text-xs font-bold transition-all">৫০ টি</button>
+                                    <button onclick="setExamQuestionsCount(100)" id="qcount-100" class="exam-qcount-btn bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-2 rounded-xl text-xs font-bold transition-all">১০০ টি</button>
+                                </div>
+                            </div>
+
+                            <button onclick="startExamSimulation()" class="w-full bg-gradient-to-r from-rose-500 to-rose-600 text-white font-bold py-3 px-4 rounded-xl text-xs shadow-lg shadow-rose-500/20 flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-play"></i>
+                                <span>পরীক্ষা শুরু করুন</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Exam Leaderboard / Previous Results -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4 lg:col-span-2">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">পূর্ববর্তী পরীক্ষার ফলাফল</h3>
+                            <button onclick="clearExamHistory()" class="text-xs text-rose-500 hover:underline">রিসেট করুন</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="text-xs text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                        <th class="pb-3 font-semibold">অধ্যায় / বিষয়</th>
+                                        <th class="pb-3 font-semibold">মোট প্রশ্ন</th>
+                                        <th class="pb-3 font-semibold text-emerald-500">সঠিক</th>
+                                        <th class="pb-3 font-semibold text-rose-500">ভুল</th>
+                                        <th class="pb-3 font-semibold">প্রাপ্ত নম্বর</th>
+                                        <th class="pb-3 font-semibold">তারিখ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="exam-history-tbody" class="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs">
+                                    <!-- Rendered dynamically -->
+                                    <tr>
+                                        <td colspan="6" class="py-4 text-center text-slate-400">কোনো পরীক্ষার ইতিহাস পাওয়া যায়নি।</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Exam Playground (Initially Hidden) -->
+                <div class="hidden glass-card p-6 md:p-8 rounded-3xl space-y-6 relative" id="exam-active-playground">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 gap-4">
+                        <div>
+                            <span class="text-xs bg-rose-500/10 text-rose-500 font-bold px-2.5 py-1 rounded-full" id="exam-active-badge">AI EXAM MODE ACTIVE</span>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mt-2" id="exam-active-title">পরীক্ষা</h3>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-center bg-rose-500 text-white px-4 py-2 rounded-2xl font-bold tracking-wider">
+                                <span class="text-[9px] block uppercase leading-none opacity-80">বাকি সময়</span>
+                                <span class="text-lg" id="exam-timer">১৯:৫৯</span>
+                            </div>
+                            <button onclick="submitActiveExam()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-2xl font-bold text-xs shadow-lg shadow-emerald-500/20">
+                                সাবমিট করুন <i class="fa-solid fa-square-check ml-1.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Questions Container -->
+                    <div class="space-y-6" id="exam-questions-container">
+                        <!-- Dynamic questions with radio buttons -->
+                    </div>
+                </div>
+
+                <!-- Exam Results Page (Initially Hidden) -->
+                <div class="hidden glass-card p-6 md:p-8 rounded-3xl space-y-6" id="exam-results-view">
+                    <div class="text-center max-w-md mx-auto space-y-3">
+                        <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-500 rounded-full flex items-center justify-center text-3xl mx-auto shadow-lg shadow-emerald-500/10">
+                            <i class="fa-solid fa-circle-check animate-bounce"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">পরীক্ষা সফলভাবে সম্পন্ন হয়েছে!</h3>
+                        <p class="text-xs text-slate-500">আপনার মেধা যাচাই ও এনালাইটিক্স ও নেগেটিভ মার্কিং হিসাব নিম্নে বিস্তারিত দেওয়া হলো।</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl text-center border border-slate-100 dark:border-slate-800">
+                            <span class="text-xs text-slate-500 block">মোট প্রশ্ন</span>
+                            <span class="text-2xl font-black text-slate-800 dark:text-white" id="res-total">২০</span>
+                        </div>
+                        <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl text-center border border-emerald-100 dark:border-emerald-900/20">
+                            <span class="text-xs text-emerald-600 block">সঠিক উত্তর</span>
+                            <span class="text-2xl font-black text-emerald-600" id="res-correct">১৮</span>
+                        </div>
+                        <div class="p-4 bg-rose-50 dark:bg-rose-950/30 rounded-2xl text-center border border-rose-100 dark:border-rose-900/20">
+                            <span class="text-xs text-rose-600 block">ভুল উত্তর</span>
+                            <span class="text-2xl font-black text-rose-600" id="res-wrong">২</span>
+                        </div>
+                        <div class="p-4 bg-indigo-50 dark:bg-indigo-950/30 rounded-2xl text-center border border-indigo-100 dark:border-indigo-900/20">
+                            <span class="text-xs text-indigo-600 block">প্রাপ্ত মোট নম্বর</span>
+                            <span class="text-2xl font-black text-indigo-600" id="res-accuracy">১৭.৫ / ২০</span>
+                        </div>
+                        <div class="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl text-center border border-amber-100 dark:border-amber-900/20">
+                            <span class="text-xs text-amber-600 block">ব্যয়িত সময়</span>
+                            <span class="text-2xl font-black text-amber-600" id="res-time">০২:৪৫ মি:</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+                        <div class="space-y-3">
+                            <h4 class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-sm">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> দূর্বল টপিকসমূহ সনাক্তকরণ
+                            </h4>
+                            <ul class="space-y-2 text-xs" id="res-weakness-list">
+                                <!-- Generated weak topics list dynamically -->
+                            </ul>
+                        </div>
+                        <div class="space-y-3">
+                            <h4 class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-sm">
+                                <i class="fa-solid fa-rocket text-indigo-500"></i> AI সাজেস্টিভ গাইডলাইন
+                            </h4>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" id="res-suggestion">
+                                আপনার পরীক্ষার ডাটা পর্যালোচনা করে দেখা যাচ্ছে যে, প্রধান বই রিভিশন করা জরুরী। বিশেষ করে মেডিকেল স্ট্যান্ডার্ড MCQ অনুশীলনে জোর দিন।
+                            </p>
+                            <button onclick="closeResultView()" class="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white font-bold py-2.5 rounded-xl text-xs hover:bg-slate-200/50">
+                                কনফিগারেশনে ফিরে যান
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 4: DAILY TASKS & CALENDAR ================= -->
+            <section id="view-tasks" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Daily Planner (To-Do) -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4 lg:col-span-2">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white">আজকের স্টাডি প্ল্যান</h3>
+                                <p class="text-xs text-slate-500">আপনার আজকের লক্ষ্যগুলো পরিচালনা করুন এবং সম্পন্ন হওয়াগুলো চিহ্নিত করুন।</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs bg-rose-500/10 text-rose-500 font-bold px-3 py-1 rounded-full" id="todo-pct">০% সম্পন্ন</span>
+                            </div>
+                        </div>
+
+                        <!-- Task Creator Form -->
+                        <div class="flex gap-2">
+                            <input type="text" id="new-task-input" placeholder="নতুন টাস্ক টাইপ করুন (উদা: কোষ রসায়ন রিভিশন)..." class="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                            <button onclick="addNewTask()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1 whitespace-nowrap">
+                                <i class="fa-solid fa-plus"></i> <span>যোগ করুন</span>
+                            </button>
+                        </div>
+
+                        <!-- Tasks List -->
+                        <ul class="space-y-2.5" id="todo-list-ul">
+                            <!-- Dynamic Tasks Rendered Here -->
+                        </ul>
+                    </div>
+
+                    <!-- Interactive Study Calendar -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4 lg:col-span-1">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white">স্টাডি ট্র্যাকার ক্যালেন্ডার</h3>
+                            <span class="text-xs font-semibold text-slate-500" id="calendar-month-year">জুন ২০২৬</span>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-400 mb-2">
+                            <span>শনি</span><span>রবি</span><span>সোম</span><span>মঙ্গল</span><span>বুধ</span><span>বৃহ</span><span>শুক্র</span>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1.5 text-center text-xs" id="calendar-grid">
+                            <!-- Calendar Grid loaded dynamically -->
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800/50">
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span> পড়াশোনা সম্পন্ন</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-slate-200 dark:bg-slate-800 inline-block"></span> স্বাভাবিক দিন</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 5: REVISION LOOP TRACKER ================= -->
+            <section id="view-revision" class="hidden space-y-6">
+                <!-- Revision Info Banner -->
+                <div class="glass-card p-6 rounded-3xl space-y-4">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-spin text-rose-500 animate-spin-slow"></i> মেডিকেল অ্যাডমিশন ২-লুপ রিভিশন সিস্টেম
+                    </h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        মেডিকেল ভর্তি পরীক্ষায় মেধা তালিকায় শীর্ষস্থান নিশ্চিত করার জন্য প্রতিটি টপিককে কমপক্ষে ৩ বার রিভিশন দেওয়া বাধ্যতামুলক। এই মডিউলে আপনার ৩টি রিভিশন ফেইজ বা লুপের লাইভ ট্র্যাকিং করা হচ্ছে।
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Loop 1 Tracker Detailed -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold px-2.5 py-1 rounded-full">ফেইজ ১: প্রথম ৩ মাস</span>
+                            <span class="text-lg font-bold text-indigo-600 dark:text-indigo-400" id="revision-loop1-pct">০%</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-white">লুপ ১ (বেসিক এবং সিলেবাস কভার)</h4>
+                        <p class="text-xs text-slate-500">সকল অধ্যায়ের মূল বই রিডিং এবং বেসিক ধারণা নিশ্চিতকরণ। প্রতি অধ্যায়ের ২ বা ততোধিক টাস্ক সম্পন্ন করলেই এই প্রগতি বৃদ্ধি পাবে।</p>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-indigo-500 h-full rounded-full" style="width: 0%" id="revision-loop1-bar"></div>
+                        </div>
+                        <div class="text-[11px] text-slate-500 flex justify-between">
+                            <span>সম্পন্নতা: <span id="revision-loop1-ratio">০/৮৭</span> টপিক</span>
+                            <span>টার্গেট: ৩ মাস</span>
+                        </div>
+                    </div>
+
+                    <!-- Loop 2 Tracker Detailed -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold px-2.5 py-1 rounded-full">ফেইজ ২: ৪র্থ - 6ষ্ঠ মাস</span>
+                            <span class="text-lg font-bold text-rose-600 dark:text-rose-400" id="revision-loop2-pct">০%</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-white">লুপ ২ (স্পিড রিভিশন ও প্র্যাকটিস)</h4>
+                        <p class="text-xs text-slate-500">মূল বই রিভিশন, দাগানো বইয়ের লাইন পড়া এবং প্রচুর MCQ প্র্যাকটিস। প্রতি অধ্যায়ের কমপক্ষে ৫টি সাব-টাস্ক সম্পন্ন করলে এই লুপ কভার হবে।</p>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-rose-500 h-full rounded-full" style="width: 0%" id="revision-loop2-bar"></div>
+                        </div>
+                        <div class="text-[11px] text-slate-500 flex justify-between">
+                            <span>সম্পন্নতা: <span id="revision-loop2-ratio">০/৮৭</span> টপিক</span>
+                            <span>টার্গেট: ৩ মাস</span>
+                        </div>
+                    </div>
+
+                    <!-- Final Loop Tracker Detailed -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-1 rounded-full">ফেইজ ৩: ৭ম মাস</span>
+                            <span class="text-lg font-bold text-emerald-600 dark:text-emerald-400" id="revision-loopfinal-pct">০%</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-white">ফাইনাল মডেল টেস্ট ও ওএমআর</h4>
+                        <p class="text-xs text-slate-500">পূর্ববর্তী বছরের প্রশ্ন এবং ভুল প্রশ্ন সমূহের নিবিড় রিভিশন। ৭টি টাস্কই সম্পূর্ণ কভার করা অধ্যায়সমূহ এখানে যুক্ত হবে।</p>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: 0%" id="revision-loopfinal-bar"></div>
+                        </div>
+                        <div class="text-[11px] text-slate-500 flex justify-between">
+                            <span>সম্পন্নতা: <span id="revision-loopfinal-ratio">০/৮৭</span> টপিক</span>
+                            <span>টার্গেট: ভর্তি পরীক্ষার মাস</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 6: PROGRESS & ANALYTICS ================= -->
+            <section id="view-analytics" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Subject Progress Radar/Bar Chart -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">বিষয় ভিত্তিক প্রিপারেশন লেভেল</h3>
+                        <div class="relative w-full h-72">
+                            <canvas id="subjectProgressChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Daily/Weekly Performance Chart -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">স্টাডি ট্রেন্ড ও সম্পূর্ণতার হার</h3>
+                        <div class="relative w-full h-72">
+                            <canvas id="weeklyTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="glass-card p-5 rounded-3xl space-y-2">
+                        <span class="text-xs text-slate-500 block">গড় এমসিকিউ সঠিকতা (Accuracy)</span>
+                        <h4 class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400" id="analytics-accuracy">০%</h4>
+                        <p class="text-[11px] text-slate-400">মেডিকেল ভর্তি পরীক্ষার চান্স পাওয়ার জন্য সেফ জোন ৮০% বা তার বেশি।</p>
+                    </div>
+                    <div class="glass-card p-5 rounded-3xl space-y-2">
+                        <span class="text-xs text-slate-500 block">মোট পরিকল্পিত রিভিশন রেট</span>
+                        <h4 class="text-3xl font-extrabold text-rose-600 dark:text-rose-400" id="analytics-revision-rate">০%</h4>
+                        <p class="text-[11px] text-slate-400">রিভিশন রেট বাড়াতে সাব-টাস্কগুলো দ্রুত সম্পন্ন করুন।</p>
+                    </div>
+                    <div class="glass-card p-5 rounded-3xl space-y-2">
+                        <span class="text-xs text-slate-500 block">সাফল্যের ইনডেক্স মিটার (Prediction Index)</span>
+                        <h4 class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400" id="analytics-success-idx">খুবই প্রাথমিক</h4>
+                        <p class="text-[11px] text-slate-400">অধ্যায় সম্পন্নতার হার বৃদ্ধি পেলে মিটার উন্নত হবে।</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 7: RESOURCES, NOTES & BOOKMARKS ================= -->
+            <section id="view-resources" class="hidden space-y-6">
+                <!-- Notes and Bookmark Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Quick Notes Section -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4 lg:col-span-1">
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">কুইক নোটবুক</h3>
+                        <p class="text-xs text-slate-500">আপনার গুরুত্বপূর্ণ ফর্মুলা, নোট বা মনে রাখার মতো পয়েন্টসমূহ এখানে লিখে রাখুন।</p>
+                        <div class="space-y-3">
+                            <textarea id="quick-note-text" placeholder="নোট লিখুন..." rows="4" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none"></textarea>
+                            <button onclick="saveQuickNote()" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-2 px-4 rounded-xl text-xs font-bold">নোট সেভ করুন</button>
+                        </div>
+                        <div id="notes-display-container" class="space-y-2 max-h-48 overflow-y-auto pt-2 border-t border-slate-100 dark:border-slate-800/50">
+                            <!-- Dynamic notes list -->
+                        </div>
+                    </div>
+
+                    <!-- Medical Formula Sheet Panel -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4 lg:col-span-2">
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">মেডিকেল ফর্মুলা ও জাদুকরী ট্রিকস</h3>
+                        <div class="space-y-3.5 max-h-[400px] overflow-y-auto pr-2">
+                            <!-- Trick Card 1 -->
+                            <div class="p-4 bg-slate-100/50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 space-y-1">
+                                <span class="text-[10px] bg-indigo-50 dark:bg-indigo-950 text-indigo-500 px-2 py-0.5 rounded-full font-bold">রসায়ন ১ম: ২য় অধ্যায়</span>
+                                <h4 class="font-bold text-xs text-indigo-600 dark:text-indigo-400">কোয়ান্টাম সংখ্যা বের করার ট্রিক</h4>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">প্রধান কোয়ান্টাম সংখ্যা (n), সহকারী কোয়ান্টাম সংখ্যা (l) = 0 থেকে (n-1), চৌম্বকীয় কোয়ান্টাম সংখ্যা (m) = -l থেকে +l। ইলেকট্রন সংখ্যা = 2n²।</p>
+                            </div>
+                            <!-- Trick Card 2 -->
+                            <div class="p-4 bg-slate-100/50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 space-y-1">
+                                <span class="text-[10px] bg-rose-50 dark:bg-rose-950 text-rose-500 px-2 py-0.5 rounded-full font-bold">উদ্ভিদবিজ্ঞান: ৪থ অধ্যায়</span>
+                                <h4 class="font-bold text-xs text-rose-600 dark:text-rose-400">ডিএনএ ও আরএনএ ভাইরাস মনে রাখার ছন্দ</h4>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed"><strong>ডিএনএ ভাইরাস ছন্দ:</strong> 'টি-২ টিয়া ভাইপো ভ্যানিলা ও হার্পিস হসপিটালে বসন্তের ভ্যাক্সিন পেল'। (T2, টিআইভি, ভ্যাক্সিনিয়া, ভ্যারিওলা, হার্পিস, হেপাটাইটিস বি, অ্যাডেনোভাইরাস)।</p>
+                            </div>
+                            <!-- Trick Card 3 -->
+                            <div class="p-4 bg-slate-100/50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 space-y-1">
+                                <span class="text-[10px] bg-emerald-50 dark:bg-emerald-950 text-emerald-500 px-2 py-0.5 rounded-full font-bold">পদার্থবিজ্ঞান ১ম: ৩য় অধ্যায়</span>
+                                <h4 class="font-bold text-xs text-emerald-600 dark:text-emerald-400">ভেক্টর গুণন এবং ডট গুণন কন্ডিশন</h4>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">দুটি ভেক্টর লম্ব হলে ডট গুণফল শূন্য (A.B = 0)। দুটি ভেক্টর সমান্তরাল হলে ক্রস গুণফল শূন্য (A x B = 0)।</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Biology Diagram Gallery -->
+                <div class="glass-card p-6 rounded-3xl space-y-4">
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">জীববিজ্ঞান ডায়াজ্রাম গ্যালারি ও চিহ্নিত চিত্র</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-center space-y-2">
+                            <div class="w-full h-24 bg-rose-500/10 dark:bg-rose-500/5 border border-rose-500/10 rounded-xl flex items-center justify-center text-rose-500">
+                                <i class="fa-solid fa-dna text-3xl"></i>
+                            </div>
+                            <span class="text-xs font-semibold block">ডিএনএ ডাবল হেলিক্স গঠন</span>
+                        </div>
+                        <div class="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-center space-y-2">
+                            <div class="w-full h-24 bg-indigo-500/10 dark:bg-indigo-500/5 border border-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500">
+                                <i class="fa-solid fa-virus text-3xl"></i>
+                            </div>
+                            <span class="text-xs font-semibold block">ব্যাক্টেরিওফায ভাইরাস গঠন</span>
+                        </div>
+                        <div class="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-center space-y-2">
+                            <div class="w-full h-24 bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">
+                                <i class="fa-solid fa-bacteria text-3xl"></i>
+                            </div>
+                            <span class="text-xs font-semibold block">ব্যাকটেরিয়া কোষের গঠন</span>
+                        </div>
+                        <div class="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-center space-y-2">
+                            <div class="w-full h-24 bg-amber-500/10 dark:bg-amber-500/5 border border-amber-500/10 rounded-xl flex items-center justify-center text-amber-500">
+                                <i class="fa-solid fa-seedling text-3xl"></i>
+                            </div>
+                            <span class="text-xs font-semibold block">উদ্ভিদ কলার প্রকারভেদ</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ================= FLOATING ACTION BUTTON (FAB) ================= -->
+    <div class="fixed bottom-6 right-6 z-40">
+        <button onclick="toggleQuickSearchModal()" class="w-14 h-14 bg-gradient-to-tr from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white rounded-full flex items-center justify-center shadow-lg shadow-rose-500/30 transition-transform hover:scale-110 active:scale-95">
+            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+        </button>
+    </div>
+
+    <!-- Quick Search Modal -->
+    <div id="quick-search-modal" class="hidden fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-lg rounded-3xl p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h4 class="text-base font-bold text-slate-900 dark:text-white">দ্রুত অধ্যায় খুঁজুন ও এডিট করুন</h4>
+                <button onclick="toggleQuickSearchModal()" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <input type="text" id="modal-search-input" oninput="searchModalChapters(this.value)" placeholder="অধ্যায়ের নাম লিখুন..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none">
+            <div id="modal-search-results" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                <!-- Dynamic search results lists -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= APP LOGIC & AI GENERATION ENGINE ================= -->
+    <script>
+        // ================= SUBJECTS AND CHAPTERS DATA =================
+        const subjectsData = {
+            bio1: {
+                name: "উদ্ভিদবিজ্ঞান (Biology 1st Paper)",
+                chapters: [
+                    "কোষ ও এর গঠন", "কোষ বিভাজন", "কোষ রসায়ন", "অণুজীব", "শৈবাল ও ছত্রাক",
+                    "ব্রায়োফাইটা ও টেরিডোফাইটা", "নগ্নবীজী ও আবৃতবীজী উদ্ভিদ", "টিস্যু ও টিস্যুতন্ত্র",
+                    "উদ্ভিদ শারীরতত্ত্ব", "উদ্ভিদ প্রজনন", "জীবপ্রযুক্তি", "জীবের পরিবেশ, বিস্তার ও সংরক্ষণ"
+                ]
+            },
+            bio2: {
+                name: "প্রাণীবিজ্ঞান (Biology 2nd Paper)",
+                chapters: [
+                    "প্রাণীর বিভিন্নতা ও শ্রেণীবিন্যাস", "প্রাণীর পরিচিতি", "পরিপাক ও শোষণ",
+                    "রক্ত ও সংবহন", "শ্বাসক্রিয়া ও শ্বসন", "বর্জ্য ও নিষ্কাশন", "চলন ও অঙ্গচালনা",
+                    "সমন্বয় ও নিয়ন্ত্রণ", "মানব জীবনের ধারাবাহিকতা", "মানবদেহের প্রতিরক্ষা",
+                    "জিনতত্ত্ব ও বিবর্তন", "প্রাণীর আচরণ"
+                ]
+            },
+            chem1: {
+                name: "রসায়ন ১ম পত্র (Chemistry 1st Paper)",
+                chapters: [
+                    "ল্যাবরেটরির নিরাপদ ব্যবহার", "गुणগত রসায়ন", "মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন",
+                    "রাসায়নিক পরিবর্তন", "কর্মমুখী রসায়ন"
+                ]
+            },
+            chem2: {
+                name: "রসায়ন ২য় পত্র (Chemistry 2nd Paper)",
+                chapters: [
+                    "পরিবেশ রসায়ন", "জৈব রসায়ন", "পরিমাণগত রসায়ন", "তড়িৎ রসায়ন", "অর্থনৈতিক রসায়ন"
+                ]
+            },
+            phy1: {
+                name: "পদার্থবিজ্ঞান ১ম পত্র (Physics 1st Paper)",
+                chapters: [
+                    "ভৌত জগৎ ও পরিমাপ", "ভেক্টর", "গতিবিদ্যা", "নিউটনীয় বলবিদ্যা", "কাজ, শক্তি ও ক্ষমতা",
+                    "মহাকর্ষ ও অভিকর্ষ", "পদার্থের গাঠনিক ধর্ম", "পর্যাবৃত্ত গতি", "তরঙ্গ", "আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব"
+                ]
+            },
+            phy2: {
+                name: "পদার্থবিজ্ঞান ২য় পত্র (Physics 2nd Paper)",
+                chapters: [
+                    "তাপগতিবিদ্যা", "স্থির তড়িৎ", "চল তড়িৎ", "তড়িতের চৌম্বক ক্রিয়া ও চৌম্বকত্ব",
+                    "তাড়িতচৌম্বক আবেশ ও পরিবর্তী প্রবাহ", "জ্যামিতিক আলোকবিজ্ঞান", "ভৌত আলোকবিজ্ঞান",
+                    "আধুনিক পদার্থবিজ্ঞানের সূচনা", "পরমাণুর মডেল ও নিউক্লিয়ার পদার্থবিজ্ঞান", "সেমিকন্ডাক্টর ও ইলেকট্রনিক্স",
+                    "জ্যোতির্বিজ্ঞান"
+                ]
+            },
+            eng: {
+                name: "ইংরেজী (English)",
+                chapters: [
+                    "Parts of Speech", "Phrase & Clause", "Right Form of Verbs", "Subject Verb Agreement",
+                    "Preposition", "Tense", "Voice Change", "Narration", "Correction", "Conditionals",
+                    "Number & Gender", "Synonym", "Antonym", "Idioms", "Phrases", "Spelling",
+                    "One Word Substitution", "Translation", "Proverbs", "Phrasal Verbs"
+                ]
+            },
+            gk: {
+                name: "সাধারণ জ্ঞান (General Knowledge)",
+                chapters: [
+                    "প্রাচীন বাংলার ইতিহাস", "ভাষা আন্দোলন", "ছয় দফা", "১১ দফা", "গণঅভ্যুত্থান",
+                    "৭০ এর নির্বাচন", "জিয়াউর রহমান", "৭ মার্চের ভাষণ", "মুজিবনগর সরকার", "১১ সেক্টর",
+                    "খেতাবপ্রাপ্ত মুক্তিযোদ্ধা", "আন্তর্জাতিক অবদান", "স্বাধীনতা ঘোষণা", "মুক্তিযুদ্ধভিত্তিক সাহিত্য",
+                    "জাতীয় বিষয়াবলি", "মেগা প্রজেক্ট", "চিকিৎসাবিজ্ঞানের গুরুত্বপূর্ণ আবিষ্কার"
+                ]
+            },
+            values: {
+                name: "মানবিক মূল্যবোধ (Ethics)",
+                chapters: [
+                    "চিকিৎসক ও রোগীর সম্পর্ক", "চিকিৎসা নীতি ও নৈতিকতা", "রোগীর অধিকার ও মানবিক আচরণ"
+                ]
+            }
+        };
+
+        const taskKeys = [
+            "bookReading", "bookRevision", "mcqPractice", "pastPapers", "chapterExam", "mistakeAnalysis", "finalRevision"
+        ];
+        
+        const taskLabels = {
+            bookReading: "Main Book Reading",
+            bookRevision: "Main Book Revision",
+            mcqPractice: "MCQ Practice",
+            pastPapers: "Previous Year Medical Questions",
+            chapterExam: "Chapter Exam",
+            mistakeAnalysis: "Mistake Analysis",
+            finalRevision: "Final Revision"
+        };
+
+        // ================= Dynamic AI Question Generator Engine =================
+        const dynamicConcepts = {
+            bio1: {
+                keywords: ["কোষ প্রাচীর", "প্লাজমাইড", "মাইটোকন্ড্রিয়া", "সেন্ট্রিওল", "রাইবোজোম", "গলজি বডি", "লাইসোজোম", "ক্লোরোপ্লাস্ট", "ক্রোমোজোম", "ডিএনএ", "আরএনএ", "ক্রসিং ওভার", "মায়োসিস", "এনজাইম", "কোষ রসায়ন"],
+                questions: [
+                    { q: "নিচের কোন অঙ্গাণুটিকে কোষে কার্বোহাইড্রেট ফ্যাক্টরি বলা হয়?", a: "গলজি বস্তু", b: "মাইটোকন্ড্রিয়া", c: "রাইবোজোম", d: "লাইসোজোম", ans: "a", sug: "গলজি বস্তুর কাজ ও বৈশিষ্ট্য" },
+                    { q: "ঝিল্লিবিহীন কোষ অঙ্গাণু কোনটি?", a: "রাইবোজোম", b: "লাইসোজোম", c: "মাইটোকন্ড্রিয়া", d: "গলজি বডি", ans: "a", sug: "কোষের আবরণীহীন অঙ্গাণুসমূহ" },
+                    { q: "ডিএনএ ডাবল হেলিক্সের একটি পূর্ণ ঘূর্ণনের দৈর্ঘ্য কত?", a: "34 Å", b: "20 Å", c: "3.4 Å", d: "10 Å", ans: "a", sug: "ডিএনএ রাসায়নিক ও গাঠনিক রূপ" },
+                    { q: "মায়োসিস বিভাজনের কোন উপদশায় কায়াজমা সৃষ্টি হয়?", a: "প্যাকাইটিন", b: "লেপটোটিন", c: "জাইগোটিন", d: "ডিপ্লোটিন", ans: "a", sug: "মায়োসিস ১ম এর প্রোফেজ-১ উপদশা" }
+                ]
+            },
+            bio2: {
+                keywords: ["সিস্টোল", "ডায়াস্টোল", "পেসমেকার", "যকৃত", "অগ্ন্যাশয়", "এনজাইম", "হিমোগ্লোবিন", "শ্বেতকণিকা", "নেফ্রন", "করোনারি ধমনী", "অ্যাসিটাইলকোলিন", "সাইন্যাপস", "অ্যান্টিবডি", "বিবর্তন"],
+                questions: [
+                    { q: "মানবদেহের স্বাভাবিক পেসমেকার (Natural Pacemaker) কোনটি?", a: "SA Node", b: "AV Node", c: "Bundle of His", d: "Purkinje Fiber", ans: "a", sug: "হৃৎপিণ্ডের জাংশনাল টিস্যু" },
+                    { q: "পাকস্থলীতে প্রোটিন পরিপাককারী প্রধান এনজাইম কোনটি?", a: "পেপসিন", b: "ট্রিপসিন", c: "টায়ালিন", d: "লাইপেজ", ans: "a", sug: "পরিপাক গ্রন্থি ও এনজাইম কার্যকারিতা" },
+                    { q: "রক্ত জমাট বাঁধার জন্য কোন আয়নটি সরাসরি কাজ করে?", a: "Ca++", b: "Fe++", c: "Na+", d: "K+", ans: "a", sug: "রক্ততঞ্চন ফ্যাক্টরসমূহ" },
+                    { q: "মানুষের লোহিত রক্তকণিকার আয়ুষ্কাল কত দিন?", a: "১২০ দিন", b: "৫০ দিন", c: "৪ দিন", d: "২০০ দিন", ans: "a", sug: "রক্তকণিকা সমূহের জীবনকাল" }
+                ]
+            },
+            chem1: {
+                keywords: ["কোয়ান্টাম সংখ্যা", "আউফবাউ নীতি", "অরবিটাল সংকরণ", "হাইড্রোজেন বন্ধন", "তড়িৎ ঋণাত্মকতা", "বাফার দ্রবণ", "দ্রাব্যতা গুণফল", "লুইস অম্ল", "ক্রোম্যাটোগ্রাফি"],
+                questions: [
+                    { q: "পানির অণুর আকৃতি এবং বন্ধন কোণ কত?", a: "কৌণিক, ১০৪.৫°", b: "সরলরৈখিক, ১৮০°", c: "চতুস্তলকীয়, ১০৯.৫°", d: "ত্রিকোণাকার, ১২০°", ans: "a", sug: "সংকরায়ন ও বন্ধন কোণ" },
+                    { q: "একটি ইলেকট্রনের জন্য l=2 হলে অরবিটালটি কি হবে?", a: "d অরবিটাল", b: "s অরবিটাল", c: "p অরবিটাল", d: "f অরбиটাল", ans: "a", sug: "কোয়ান্টাম সংখ্যার মান নির্ণয়" },
+                    { q: "নিচের কোনটি বাফার দ্রবণ তৈরিতে ব্যবহৃত হয়?", a: "CH3COOH এবং CH3COONa", b: "HCl এবং NaCl", c: "NaOH এবং H2O", d: "H2SO4 এবং Na2SO4", ans: "a", sug: "বাফার দ্রবণের রসায়ন" }
+                ]
+            },
+            chem2: {
+                keywords: ["বয়েল সূত্র", "চার্লস সূত্র", "জৈব এসিড", "বেনজিন", "তড়িৎদ্বার বিভব", "আরহেনিয়াস সমীকরণ", "মারকনিকভ নীতি", "আইসোপিল অ্যালকোহল"],
+                questions: [
+                    { q: "নিচের কোনটি লুইস এসিডের উদাহরণ?", a: "AlCl3", b: "NH3", c: "H2O", d: "CH4", ans: "a", sug: "অম্ল-ক্ষার তত্ত্ব ও লুইস কনসেপ্ট" },
+                    { q: "মারকনিকভ নিয়মে অপ্রতিসম অ্যালকিনের সাথে বিকারক যুক্ত হওয়ার প্রধান শর্ত কি?", a: "তেল সমৃদ্ধ কার্বনে হাইড্রোজেন যুক্ত হওয়া", b: "কম হাইড্রোজেন সমৃদ্ধ কার্বনে হ্যালোজেন যুক্ত হওয়া", c: "উভয় কার্বনে সমান বণ্টন", d: "তাপমাত্রার পরিবর্তন", ans: "b", sug: "জৈব রসায়নে মারকনিকভ সংযোজন বিক্রিয়া" }
+                ]
+            },
+            phy1: {
+                keywords: ["মাত্রা সমীকরণ", "লব্ধি ভেক্টর", "ক্রস গুণন", "মহাকর্ষীয় ধ্রুবক", "সংরক্ষণশীল বল", "পর্যাবৃত্ত গতি", "আদর্শ গ্যাস ধ্রুবক", "পৃষ্ঠটান"],
+                questions: [
+                    { q: "দুটি সমমানের ভেক্টরের লব্ধির মান এদের যেকোনো একটির সমান হলে মধ্যবর্তী কোণ কত?", a: "১২০°", b: "৯০°", c: "৬০°", d: "১৮০°", ans: "a", sug: "ভেক্টর লব্ধি ও কোন বিশ্লেষণ" },
+                    { q: "মহাকর্ষীয় ধ্রুবক (G) এর একক কোনটি?", a: "N m² kg⁻²", b: "N m kg⁻¹", c: "kg m s⁻²", d: "J s", ans: "a", sug: "মহাকর্ষ ও অভিকর্ষের ধ্রুবক" }
+                ]
+            },
+            phy2: {
+                keywords: ["এনট্রপি", "কার্নো চক্র", "রোধের সূত্র", "হুইটস্টোন ব্রিজ", "তেজস্ক্রিয়তা", "সেমিকন্ডাক্টর", "ফটোইলেকট্রিক ইফেক্ট", "আলোক প্রতিফলন"],
+                questions: [
+                    { q: "কার্নো ইঞ্জিনের দক্ষতা ১০০% করতে হলে গ্রাহকের তাপমাত্রা কত হতে হবে?", a: "0 K (শূন্য কেলভিন)", b: "273 K", c: "100 K", d: "373 K", ans: "a", sug: "তাপগতিবিদ্যা ও কার্নো ইঞ্জিন দক্ষতা" },
+                    { q: "অর্ধপরিবাহীর (Semiconductor) তাপমাত্রা বাড়ালে রোধের কি পরিবর্তন হয়?", a: "হ্রাস পায়", b: "বৃদ্ধি পায়", c: "একই থাকে", d: "প্রথমে বাড়ে পরে কমে", ans: "a", sug: "সেমিকন্ডাক্টর ও রোধের উষ্ণতা গুণাঙ্ক" }
+                ]
+            },
+            eng: {
+                keywords: ["Preposition", "Voice Change", "Subject Verb Agreement", "Synonym", "Antonym", "Right Form of Verbs", "Spelling"],
+                questions: [
+                    { q: "Identify the correct spelling:", a: "Diarrhoea", b: "Diarhea", c: "Diarea", d: "Diarhoea", ans: "a", sug: "Important Medical Spellings" },
+                    { q: "What is the synonym of 'Prudent'?", a: "Wise", b: "Foolish", c: "Careless", d: "Active", ans: "a", sug: "Synonyms & Vocabulary" },
+                    { q: "He is run over ___ a car.", a: "by", b: "with", c: "on", d: "at", ans: "a", sug: "Appropriate Prepositions" }
+                ]
+            },
+            gk: {
+                keywords: ["ভাষা আন্দোলন", "১১ সেক্টর", "বঙ্গবন্ধুর ৭ মার্চের ভাষণ", "মেগা প্রজেক্ট", "চিকিৎসা বিজ্ঞানে আবিষ্কার", "মুজিবনগর সরকার"],
+                questions: [
+                    { q: "১৯৭১ সালের মুক্তিযুদ্ধে সমগ্র বাংলাদেশকে কয়টি সেক্টরে ভাগ করা হয়েছিল?", a: "১১ টি", b: "৬৪ টি", c: "৮ টি", d: "৭ টি", ans: "a", sug: "মুক্তিযুদ্ধের সেক্টর ও ইতিহাস" },
+                    { q: "বঙ্গবন্ধুর ৭ মার্চের ভাষণ সংবিধানের কোন তফসিলে অন্তর্ভুক্ত করা হয়েছে?", a: "পঞ্চম তফসিল", b: "চতুর্থ তফসিল", c: "ষষ্ঠ তফসিল", d: "সপ্তম তফসিল", ans: "a", sug: "সংবিধান ও ঐতিহাসিক দলিলসমূহ" },
+                    { q: "চিকিৎসা বিজ্ঞানে পেনিসিলিন অ্যান্টিবায়োটিক কে আবিষ্কার করেন?", a: "আলেকজান্ডার ফ্লেমিং", b: "লুই পাস্তুর", c: "রবার্ট হুক", d: "এডওয়ার্ড জেনার", ans: "a", sug: "চিকিৎসা বিজ্ঞানের গুরুত্বপূর্ণ আবিষ্কার" }
+                ]
+            },
+            values: {
+                keywords: ["চিকিৎসক-রোগী সম্পর্ক", "মেডিকেল এথিক্স", "রোগীর গোপনীয়তা", "ইনফর্মড কনসেন্ট", "পেশাদারিত্ব", "মানবিক আচরণ"],
+                questions: [
+                    { q: "চিকিৎসা বিজ্ঞানে রোগীর যেকোনো তথ্য গোপন রাখার নীতিকে কী বলা হয়?", a: "Autonomy", b: "Confidentiality", c: "Beneficence", d: "Justice", ans: "b", sug: "রোগীর গোপনীয়তা রক্ষা নীতি" },
+                    { q: "চিকিৎসা দেওয়ার পূর্বে রোগীর পূর্ণ সম্মতি নেওয়াকে কী বলা হয়?", a: "Informed Consent", b: "Prescription", c: "Medical Ethics", d: "Autonomy", ans: "a", sug: "ইনফর্মড কনসেন্ট ও রোগীর অধিকার" }
+                ]
+            }
+        };
+
+        // Procedural question generator based on Subject & Chapter Name
+        function generateAIQuestions(subjectKey, chapterIndex, count) {
+            const subject = subjectsData[subjectKey];
+            const chapterName = subject.chapters[chapterIndex];
+            
+            // Get base templates for subject
+            const baseData = dynamicConcepts[subjectKey] || dynamicConcepts['gk'];
+            let generatedQuestions = [];
+
+            // 1. Add handcrafted high-yield templates first
+            baseData.questions.forEach(q => {
+                generatedQuestions.push({
+                    q: q.q,
+                    a: q.a,
+                    b: q.b,
+                    c: q.c,
+                    d: q.d,
+                    ans: q.ans,
+                    sug: q.sug
+                });
+            });
+
+            // 2. Synthesize remaining questions procedurally using specific chapter context
+            const keywords = baseData.keywords;
+            let counter = generatedQuestions.length;
+
+            while (generatedQuestions.length < count) {
+                const keyword1 = keywords[Math.floor(Math.random() * keywords.length)];
+                
+                // Construct realistic medical style multiple choice formats
+                const questionTypes = [
+                    {
+                        q: `${counter + 1}. [অধ্যায়] মডিউল থেকে মেডিকেল স্ট্যান্ডার্ড প্রশ্ন: নিচের কোনটির সাথে '${keyword1}' সরাসরি সম্পর্কযুক্ত?`,
+                        a: `কোষের কার্যকারিতা ও রূপান্তর`,
+                        b: `প্রোটিন ও এনজাইমের অনুঘটক প্রক্রিয়া`,
+                        c: `বিগত বছরের মেডিকেল প্রশ্নানুসারে ডাটা বিশ্লেষণ`,
+                        d: `ল্যাবরেটরি ড্রাগ টেস্ট ডিজাইন`,
+                        ans: "c",
+                        sug: `${chapterName} এবং ${keyword1} এর পারষ্পরিক সম্পর্ক`
+                    },
+                    {
+                        q: `${counter + 1}. বিগত ভর্তি পরীক্ষার প্রশ্ন পর্যালোচনা: '${keyword1}' প্রক্রিয়ার প্রধান নিয়ামক হিসেবে কাজ করে কোনটি?`,
+                        a: `এনজাইম এবং বাহক প্রোটিন`,
+                        b: `ডিএনএ পলিমারেজ এনজাইম`,
+                        c: `উচ্চ তাপমাত্রা ও অনুঘটক`,
+                        d: `রক্ত সংবহন ও প্লাজমা প্রোটিন`,
+                        ans: "a",
+                        sug: `${keyword1} এর বায়োলজিক্যাল বায়োফিজিক্স কনসেপ্ট`
+                    },
+                    {
+                        q: `${counter + 1}. মেডিকেল অ্যাডমিশনের বিশেষ টার্গেট প্রশ্ন: নিচের কোনটি '${keyword1}' এর প্রধান সীমাবদ্ধতা বা নিষ্ক্রিয়তার কারণ?`,
+                        a: `পিএইচ (pH) পরিবর্তন ও অম্লতা`,
+                        b: `নির্দিষ্ট তাপমাত্রার অভাব`,
+                        c: `উভয়মুখী বিক্রিয়া ও লিকুইড ফেজ`,
+                        d: `ঝিল্লিবিহীন আবরণ`,
+                        ans: "a",
+                        sug: `${chapterName} - ${keyword1} এর তাত্ত্বিক বিশ্লেষণ`
+                    }
+                ];
+
+                const pickedTemplate = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+                const finalQText = pickedTemplate.q.replace("[অধ্যায়]", chapterName);
+
+                generatedQuestions.push({
+                    q: finalQText,
+                    a: pickedTemplate.a,
+                    b: pickedTemplate.b,
+                    c: pickedTemplate.c,
+                    d: pickedTemplate.d,
+                    ans: pickedTemplate.ans,
+                    sug: pickedTemplate.sug
+                });
+
+                counter++;
+            }
+
+            // Shuffle questions to make it truly dynamic
+            return generatedQuestions.sort(() => 0.5 - Math.random()).slice(0, count);
+        }
+
+        // State variables
+        let appState = {
+            chaptersProgress: {}, // chapterKey -> { bookReading: bool, bookRevision: bool, ... }
+            bookmarked: {}, // chapterKey -> bool
+            dailyTasks: [], // list of { id, text, completed: bool }
+            notes: {}, // chapterKey -> text
+            personalNotes: [],
+            examHistory: [], // list of previous exams
+            streak: 12,
+            studyHours: 145,
+            theme: 'light',
+            examTargetDate: null
+        };
+
+        // Initialize state from localstorage
+        function loadState() {
+            const stored = localStorage.getItem('medi_pro_dashboard_state');
+            if (stored) {
+                try {
+                    appState = JSON.parse(stored);
+                } catch (e) {
+                    console.error("Error loading state", e);
+                }
+            }
+            if (!appState.chaptersProgress) appState.chaptersProgress = {};
+            if (!appState.bookmarked) appState.bookmarked = {};
+            if (!appState.dailyTasks) appState.dailyTasks = [];
+            if (!appState.notes) appState.notes = {};
+            if (!appState.personalNotes) appState.personalNotes = [];
+            if (!appState.examHistory) appState.examHistory = [];
+            if (!appState.streak) appState.streak = 12;
+            if (!appState.studyHours) appState.studyHours = 145;
+            if (!appState.theme) appState.theme = 'light';
+            if (!appState.examTargetDate) {
+                const target = new Date();
+                target.setDate(target.getDate() + 210); // Default to 210 days from first load
+                appState.examTargetDate = target.toISOString();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('medi_pro_dashboard_state', JSON.stringify(appState));
+            updateMetricsAndUI();
+        }
+
+        // ================= NAVIGATION SYSTEM =================
+        function switchView(viewId) {
+            ['overview', 'subjects', 'exam', 'tasks', 'revision', 'analytics', 'resources'].forEach(id => {
+                const el = document.getElementById(`view-${id}`);
+                if (el) el.classList.add('hidden');
+                
+                const navBtn = document.getElementById(`nav-${id}`);
+                if (navBtn) {
+                    navBtn.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all";
+                }
+            });
+
+            const activeEl = document.getElementById(`view-${viewId}`);
+            if (activeEl) activeEl.classList.remove('hidden');
+
+            const activeNav = document.getElementById(`nav-${viewId}`);
+            if (activeNav) {
+                activeNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-sm font-medium bg-rose-500 text-white shadow-lg shadow-rose-500/20";
+            }
+
+            const titles = {
+                overview: "ড্যাশবোর্ড ওভারভিউ",
+                subjects: "বিষয় ও অধ্যায়সমূহ",
+                exam: "AI এমসিকিউ পরীক্ষা",
+                tasks: "দৈনিক লক্ষ্য ও ক্যালেন্ডার",
+                revision: "রিভিশন ট্র্যাকার (Loops)",
+                analytics: "অগ্রগতি ও এনালাইটিক্স",
+                resources: "সহায়ক গ্যালারি ও নোটস"
+            };
+            const subtitles = {
+                overview: "স্বাগতম মিজানুর রহমান, আজ আপনার পড়াশোনা শুরু করুন!",
+                subjects: "অধ্যায়ের সাব-টাস্কগুলো সম্পন্ন করুন ও প্রগতি বৃদ্ধি করুন।",
+                exam: "বাস্তব ভর্তি পরীক্ষার আদলে কাস্টম AI এমসিকিউ পরীক্ষা দিন।",
+                tasks: "আপনার প্রতিদিনের লক্ষ্য এবং পড়াশোনার ট্র্যাক রাখুন।",
+                revision: "১ম ও ২য় লুপ রিভিশনের সম্পূর্ণ এবং পুঙ্খানুপুঙ্খ ট্র্যাক রাখুন।",
+                analytics: "আপনার সাবজেক্ট ওয়াইজ পারফরম্যান্সের বিস্তারিত গ্রাফ ও ট্র্যাকিং।",
+                resources: "মেডিকেল ভর্তি পরীক্ষার জন্য বিশেষভাবে সংকলিত সহায়িকা ও নোট।"
+            };
+
+            document.getElementById('header-view-title').innerText = titles[viewId];
+            document.getElementById('header-view-subtitle').innerText = subtitles[viewId];
+
+            if (viewId === 'subjects') {
+                renderChapters();
+            } else if (viewId === 'exam') {
+                loadExamChapters('bio1');
+                renderExamHistory();
+            } else if (viewId === 'tasks') {
+                renderDailyTasks();
+                renderCalendar();
+            } else if (viewId === 'analytics') {
+                initCharts();
+            } else if (viewId === 'resources') {
+                renderNotesList();
+            }
+
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+
+        // ================= DOCK & GENERAL STATS CALCULATION =================
+        let totalChaptersCount = 0;
+        let completedChaptersCount = 0;
+        let totalSubTasksCount = 0;
+        let completedSubTasksCount = 0;
+
+        function calculateStatistics() {
+            totalChaptersCount = 0;
+            completedChaptersCount = 0;
+            totalSubTasksCount = 0;
+            completedSubTasksCount = 0;
+
+            Object.keys(subjectsData).forEach(subjKey => {
+                subjectsData[subjKey].chapters.forEach((chap, idx) => {
+                    const chapKey = `${subjKey}_${idx}`;
+                    totalChaptersCount++;
+
+                    const prog = appState.chaptersProgress[chapKey] || {};
+                    let chapDone = true;
+                    taskKeys.forEach(tKey => {
+                        totalSubTasksCount++;
+                        if (prog[tKey]) {
+                            completedSubTasksCount++;
+                        } else {
+                            chapDone = false;
+                        }
+                    });
+
+                    if (chapDone) {
+                        completedChaptersCount++;
+                    }
+                });
+            });
+        }
+
+        function updateMetricsAndUI() {
+            calculateStatistics();
+
+            const overallPct = totalSubTasksCount > 0 ? Math.round((completedSubTasksCount / totalSubTasksCount) * 100) : 0;
+            
+            document.getElementById('card-total-chapters').innerText = `${totalChaptersCount} টি`;
+            document.getElementById('card-completed-chapters').innerText = `${completedChaptersCount} টি`;
+            document.getElementById('card-pending-chapters').innerText = `${totalChaptersCount - completedChaptersCount} টি`;
+            document.getElementById('card-overall-pct').innerText = `${overallPct}%`;
+            
+            document.getElementById('header-streak').innerText = `${appState.streak} দিন`;
+
+            const todayTasksCount = appState.dailyTasks.length;
+            document.getElementById('card-today-tasks').innerText = `${todayTasksCount} টি`;
+
+            const ringCircle = document.getElementById('overall-ring-circle');
+            if (ringCircle) {
+                const radius = parseFloat(ringCircle.getAttribute('r')) || 70;
+                const circumference = radius * 2 * Math.PI;
+                ringCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+                const offset = circumference - (overallPct / 100) * circumference;
+                ringCircle.style.strokeDashoffset = offset;
+                document.getElementById('overall-ring-text').innerText = `${overallPct}%`;
+            }
+
+            document.getElementById('ratio-chapters-done').innerText = `${completedChaptersCount}/${totalChaptersCount}`;
+            document.getElementById('ratio-tasks-done').innerText = `${completedSubTasksCount}/${totalSubTasksCount}`;
+
+            let loop1Count = 0, loop2Count = 0, loopFinalCount = 0;
+            Object.keys(appState.chaptersProgress).forEach(ck => {
+                const p = appState.chaptersProgress[ck] || {};
+                if (p.bookReading) loop1Count++;
+                if (p.bookRevision) loop1Count++;
+                if (p.mcqPractice) loop1Count++;
+
+                if (p.pastPapers) loop2Count++;
+                if (p.chapterExam) loop2Count++;
+                if (p.mistakeAnalysis) loop2Count++;
+
+                if (p.finalRevision) loopFinalCount++;
+            });
+
+            const loop1Max = totalChaptersCount * 3;
+            const loop2Max = totalChaptersCount * 3;
+            const loopFinalMax = totalChaptersCount;
+
+            const loop1Pct = loop1Max > 0 ? Math.round((loop1Count / loop1Max) * 100) : 0;
+            const loop2Pct = loop2Max > 0 ? Math.round((loop2Count / loop2Max) * 100) : 0;
+            const loopFinalPct = loopFinalMax > 0 ? Math.round((loopFinalCount / loopFinalMax) * 100) : 0;
+
+            document.getElementById('card-loop1-progress').innerText = `${loop1Pct}%`;
+            
+            document.getElementById('loop-1-text').innerText = `${loop1Pct}%`;
+            document.getElementById('loop-1-bar').style.width = `${loop1Pct}%`;
+            document.getElementById('loop-2-text').innerText = `${loop2Pct}%`;
+            document.getElementById('loop-2-bar').style.width = `${loop2Pct}%`;
+            document.getElementById('loop-final-text').innerText = `${loopFinalPct}%`;
+            document.getElementById('loop-final-bar').style.width = `${loopFinalPct}%`;
+
+            const revLoop1Pct = document.getElementById('revision-loop1-pct');
+            if (revLoop1Pct) {
+                revLoop1Pct.innerText = `${loop1Pct}%`;
+                document.getElementById('revision-loop1-bar').style.width = `${loop1Pct}%`;
+                document.getElementById('revision-loop1-ratio').innerText = `${Math.floor(loop1Count/3)}`;
+
+                document.getElementById('revision-loop2-pct').innerText = `${loop2Pct}%`;
+                document.getElementById('revision-loop2-bar').style.width = `${loop2Pct}%`;
+                document.getElementById('revision-loop2-ratio').innerText = `${Math.floor(loop2Count/3)}`;
+
+                document.getElementById('revision-loopfinal-pct').innerText = `${loopFinalPct}%`;
+                document.getElementById('revision-loopfinal-bar').style.width = `${loopFinalPct}%`;
+                document.getElementById('revision-loopfinal-ratio').innerText = `${loopFinalCount}`;
+            }
+
+            let totalAccuracy = 0;
+            let totalExamsCount = appState.examHistory.length;
+            appState.examHistory.forEach(ex => {
+                totalAccuracy += ex.accuracy;
+            });
+            const avgAccuracy = totalExamsCount > 0 ? Math.round(totalAccuracy / totalExamsCount) : 0;
+
+            const successMeterPct = Math.min(100, Math.round((overallPct * 0.7) + (avgAccuracy * 0.3)));
+            document.getElementById('success-meter').innerText = `${successMeterPct || 10}%`;
+
+            const indexMap = ["অত্যন্ত প্রাথমিক", "উন্নতি প্রয়োজন", "মাঝারি প্রস্তুতি", "চমৎকার প্রস্তুতি", "চান্স পাওয়ার উজ্জ্বল সম্ভাবনা"];
+            let rating = indexMap[0];
+            if (overallPct > 80) rating = indexMap[4];
+            else if (overallPct > 50) rating = indexMap[3];
+            else if (overallPct > 30) rating = indexMap[2];
+            else if (overallPct > 10) rating = indexMap[1];
+
+            const successIdxEl = document.getElementById('analytics-success-idx');
+            if (successIdxEl) {
+                successIdxEl.innerText = rating;
+                document.getElementById('analytics-accuracy').innerText = `${avgAccuracy}%`;
+                document.getElementById('analytics-revision-rate').innerText = `${loop1Pct}%`;
+            }
+        }
+
+        // ================= SUBJECT & CHAPTER SECTION =================
+        let currentSubjectFilter = 'all';
+
+        function filterSubject(subjKey) {
+            currentSubjectFilter = subjKey;
+            
+            const allTabs = ['all', 'bio1', 'bio2', 'chem1', 'chem2', 'phy1', 'phy2', 'eng', 'gk', 'values'];
+            allTabs.forEach(t => {
+                const btn = document.getElementById(`subj-tab-${t}`);
+                if (btn) {
+                    if (t === subjKey) {
+                        btn.className = "text-xs font-semibold px-4 py-2 rounded-xl transition-all whitespace-nowrap bg-rose-500 text-white shadow-md";
+                    } else {
+                        btn.className = "text-xs font-semibold px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 whitespace-nowrap";
+                    }
+                }
+            });
+
+            renderChapters();
+        }
+
+        function renderChapters() {
+            const grid = document.getElementById('chapters-grid');
+            grid.innerHTML = '';
+
+            let query = document.getElementById('chapter-search').value.toLowerCase();
+
+            Object.keys(subjectsData).forEach(subjKey => {
+                if (currentSubjectFilter !== 'all' && currentSubjectFilter !== subjKey) return;
+
+                const subject = subjectsData[subjKey];
+                subject.chapters.forEach((chap, idx) => {
+                    if (query && !chap.toLowerCase().includes(query)) return;
+
+                    const chapKey = `${subjKey}_${idx}`;
+                    const progress = appState.chaptersProgress[chapKey] || {};
+                    const isBookmarked = appState.bookmarked[chapKey] || false;
+
+                    let doneCount = 0;
+                    taskKeys.forEach(tk => { if (progress[tk]) doneCount++; });
+                    const isFullyComplete = doneCount === taskKeys.length;
+
+                    const card = document.createElement('div');
+                    card.className = `glass-card p-5 rounded-3xl space-y-4 relative overflow-hidden transition-all duration-300 ${isFullyComplete ? 'border-emerald-500/50 dark:border-emerald-500/30' : ''}`;
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] bg-rose-50 dark:bg-rose-950/40 text-rose-500 font-bold px-2 py-0.5 rounded-full uppercase truncate max-w-[150px]">
+                                ${subject.name}
+                            </span>
+                            <div class="flex items-center space-x-1.5">
+                                <button onclick="toggleBookmark('${chapKey}')" class="text-xs transition-colors ${isBookmarked ? 'text-amber-500' : 'text-slate-400 hover:text-amber-500'}">
+                                    <i class="${isBookmarked ? 'fa-solid' : 'fa-regular'} fa-bookmark text-base"></i>
+                                </button>
+                                ${isFullyComplete ? '<span class="text-emerald-500"><i class="fa-solid fa-circle-check text-base"></i></span>' : ''}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-900 dark:text-white text-sm tracking-wide leading-snug">${chap}</h4>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">প্রগতি: ${doneCount}/${taskKeys.length} সম্পন্ন</p>
+                        </div>
+
+                        <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/50">
+                            ${taskKeys.map(tk => `
+                                <label class="flex items-center space-x-2.5 cursor-pointer text-xs group">
+                                    <input type="checkbox" onchange="toggleTaskState('${chapKey}', '${tk}')" ${progress[tk] ? 'checked' : ''} class="w-4 h-4 rounded text-rose-500 bg-slate-50 border-slate-300 focus:ring-rose-500 dark:bg-slate-900 dark:border-slate-800">
+                                    <span class="text-slate-600 dark:text-slate-300 group-hover:text-rose-500 select-none ${progress[tk] ? 'line-through text-slate-400 dark:text-slate-500' : ''}">
+                                        ${taskLabels[tk]}
+                                    </span>
+                                </label>
+                            `).join('')}
+                        </div>
+
+                        <div class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/50">
+                            <textarea onchange="saveChapterNote('${chapKey}', this.value)" placeholder="ব্যক্তিগত নোট বা গুরুত্বপূর্ণ টপিক..." rows="1" class="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50 rounded-xl px-2.5 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-rose-500">${appState.notes[chapKey] || ''}</textarea>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            });
+
+            if (grid.innerHTML === '') {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">কোনো অধ্যায় পাওয়া যায়নি।</div>`;
+            }
+        }
+
+        function toggleTaskState(chapKey, taskKey) {
+            if (!appState.chaptersProgress[chapKey]) {
+                appState.chaptersProgress[chapKey] = {};
+            }
+            appState.chaptersProgress[chapKey][taskKey] = !appState.chaptersProgress[chapKey][taskKey];
+            saveState();
+            renderChapters();
+        }
+
+        function toggleBookmark(chapKey) {
+            appState.bookmarked[chapKey] = !appState.bookmarked[chapKey];
+            saveState();
+            renderChapters();
+        }
+
+        function saveChapterNote(chapKey, text) {
+            appState.notes[chapKey] = text;
+            saveState();
+        }
+
+        function searchChapters(val) {
+            renderChapters();
+        }
+
+        // ================= DYNAMIC AI MCQ EXAM SYSTEM =================
+        let examQuestionCount = 20;
+        let activeExamTimerId = null;
+        let examTimeRemaining = 1200;
+        let currentExamChapterKey = "";
+        let selectedAnswers = {}; 
+
+        function setExamQuestionsCount(count) {
+            examQuestionCount = count;
+            document.querySelectorAll('.exam-qcount-btn').forEach(btn => {
+                btn.className = "exam-qcount-btn bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-2 rounded-xl text-xs font-bold transition-all";
+            });
+            document.getElementById(`qcount-${count}`).className = "exam-qcount-btn bg-rose-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all";
+        }
+
+        function loadExamChapters(subjKey) {
+            const chapSelect = document.getElementById('exam-chapter');
+            chapSelect.innerHTML = '';
+            
+            const subject = subjectsData[subjKey];
+            subject.chapters.forEach((chap, idx) => {
+                const opt = document.createElement('option');
+                opt.value = `${subjKey}_${idx}`;
+                opt.innerText = chap;
+                chapSelect.appendChild(opt);
+            });
+        }
+
+        function startExamSimulation() {
+            const subjSelect = document.getElementById('exam-subject');
+            const chapSelect = document.getElementById('exam-chapter');
+            
+            if (!chapSelect.value) {
+                alert("অনুগ্রহ করে একটি অধ্যায় নির্বাচন করুন।");
+                return;
+            }
+
+            const [subjKey, chapIdxStr] = chapSelect.value.split('_');
+            const chapIdx = parseInt(chapIdxStr);
+            currentExamChapterKey = chapSelect.value;
+            selectedAnswers = {};
+            
+            const questionsContainer = document.getElementById('exam-questions-container');
+            questionsContainer.innerHTML = '';
+
+            // Generate customized dynamic exam questions for this exact selected chapter
+            const activeQuestions = generateAIQuestions(subjKey, chapIdx, examQuestionCount);
+            window.activeExamQuestions = activeQuestions;
+
+            activeQuestions.forEach((qObj, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = "p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 space-y-3";
+                
+                qDiv.innerHTML = `
+                    <p class="font-semibold text-xs text-slate-900 dark:text-white">${qObj.q}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-center space-x-2.5 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer">
+                            <input type="radio" name="question_${index}" value="a" onchange="selectOption(${index}, 'a')" class="w-4 h-4 text-rose-500 border-slate-300 focus:ring-rose-500">
+                            <span>ক) ${qObj.a}</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer">
+                            <input type="radio" name="question_${index}" value="b" onchange="selectOption(${index}, 'b')" class="w-4 h-4 text-rose-500 border-slate-300 focus:ring-rose-500">
+                            <span>খ) ${qObj.b}</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer">
+                            <input type="radio" name="question_${index}" value="c" onchange="selectOption(${index}, 'c')" class="w-4 h-4 text-rose-500 border-slate-300 focus:ring-rose-500">
+                            <span>গ) ${qObj.c}</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer">
+                            <input type="radio" name="question_${index}" value="d" onchange="selectOption(${index}, 'd')" class="w-4 h-4 text-rose-500 border-slate-300 focus:ring-rose-500">
+                            <span>ঘ) ${qObj.d}</span>
+                        </label>
+                    </div>
+                `;
+                questionsContainer.appendChild(qDiv);
+            });
+
+            const subjName = subjectsData[subjSelect.value].name;
+            const chapName = chapSelect.options[chapSelect.selectedIndex].text;
+            document.getElementById('exam-active-title').innerText = `${subjName} - ${chapName}`;
+
+            document.getElementById('exam-config-view').classList.add('hidden');
+            document.getElementById('exam-active-playground').classList.remove('hidden');
+
+            examTimeRemaining = examQuestionCount * 60; // 1 min per question
+            updateExamTimerUI();
+
+            activeExamTimerId = setInterval(() => {
+                examTimeRemaining--;
+                updateExamTimerUI();
+                if (examTimeRemaining <= 0) {
+                    submitActiveExam();
+                }
+            }, 1000);
+        }
+
+        function selectOption(qIdx, option) {
+            selectedAnswers[qIdx] = option;
+        }
+
+        function updateExamTimerUI() {
+            const minutes = Math.floor(examTimeRemaining / 60);
+            const seconds = examTimeRemaining % 60;
+            document.getElementById('exam-timer').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function submitActiveExam() {
+            clearInterval(activeExamTimerId);
+            
+            const activeQuestions = window.activeExamQuestions;
+            let correctCount = 0;
+            let wrongCount = 0;
+            let unansweredCount = 0;
+            let weakTopics = new Set();
+
+            activeQuestions.forEach((qObj, idx) => {
+                const chosen = selectedAnswers[idx];
+                if (chosen === undefined) {
+                    unansweredCount++;
+                } else if (chosen === qObj.ans) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                    weakTopics.add(qObj.sug);
+                }
+            });
+
+            const total = activeQuestions.length;
+            
+            // Medical Standard Negative Marking (-0.25 for wrong answers)
+            const calculatedScore = correctCount - (wrongCount * 0.25);
+            const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+            
+            const timeSpentSecs = (total * 60) - examTimeRemaining;
+            const spentMins = Math.floor(timeSpentSecs / 60);
+            const spentSecs = timeSpentSecs % 60;
+
+            const weakContainer = document.getElementById('res-weakness-list');
+            weakContainer.innerHTML = '';
+            if (weakTopics.size > 0) {
+                weakTopics.forEach(topic => {
+                    const li = document.createElement('li');
+                    li.className = "flex items-center space-x-2 text-rose-500 bg-rose-500/5 p-2 rounded-xl border border-rose-500/10";
+                    li.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span>${topic}</span>`;
+                    weakContainer.appendChild(li);
+                });
+            } else {
+                weakContainer.innerHTML = `<li class="text-emerald-500 flex items-center gap-1.5 font-bold"><i class="fa-solid fa-square-check"></i> অভিনন্দন! কোনো দুর্বল টপিক পাওয়া যায়নি।</li>`;
+            }
+
+            document.getElementById('res-total').innerText = total;
+            document.getElementById('res-correct').innerText = correctCount;
+            document.getElementById('res-wrong').innerText = wrongCount;
+            document.getElementById('res-accuracy').innerText = `${calculatedScore.toFixed(2)} / ${total}`;
+            document.getElementById('res-time').innerText = `${spentMins.toString().padStart(2, '0')}:${spentSecs.toString().padStart(2, '0')} মিনিট`;
+
+            const [subjKey, chapIdx] = currentExamChapterKey.split('_');
+            const chapName = subjectsData[subjKey].chapters[parseInt(chapIdx)];
+            
+            appState.examHistory.unshift({
+                chapter: chapName,
+                total: total,
+                correct: correctCount,
+                wrong: wrongCount,
+                accuracy: accuracy, // Standard accuracy tracker
+                obtainedScore: calculatedScore,
+                date: new Date().toLocaleDateString('bn-BD')
+            });
+
+            if (!appState.chaptersProgress[currentExamChapterKey]) {
+                appState.chaptersProgress[currentExamChapterKey] = {};
+            }
+            appState.chaptersProgress[currentExamChapterKey].chapterExam = true;
+
+            saveState();
+
+            document.getElementById('exam-active-playground').classList.add('hidden');
+            document.getElementById('exam-results-view').classList.remove('hidden');
+        }
+
+        function closeResultView() {
+            document.getElementById('exam-results-view').classList.add('hidden');
+            document.getElementById('exam-config-view').classList.remove('hidden');
+            renderExamHistory();
+        }
+
+        function renderExamHistory() {
+            const tbody = document.getElementById('exam-history-tbody');
+            tbody.innerHTML = '';
+
+            if (appState.examHistory.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">কোনো পরীক্ষার ইতিহাস পাওয়া যায়নি।</td></tr>`;
+                return;
+            }
+
+            appState.examHistory.slice(0, 10).forEach(ex => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30";
+                
+                // Handling historical data compatibility
+                const scoreValue = ex.obtainedScore !== undefined ? ex.obtainedScore.toFixed(2) : ex.correct;
+                
+                tr.innerHTML = `
+                    <td class="py-3 font-semibold text-slate-700 dark:text-slate-300">${ex.chapter}</td>
+                    <td class="py-3">${ex.total}</td>
+                    <td class="py-3 font-bold text-emerald-500">${ex.correct}</td>
+                    <td class="py-3 font-bold text-rose-500">${ex.wrong}</td>
+                    <td class="py-3"><span class="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 px-2.5 py-1 rounded-full font-bold">${scoreValue} / ${ex.total}</span></td>
+                    <td class="py-3 text-slate-400">${ex.date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearExamHistory() {
+            if (confirm("আপনি কি নিশ্চিতভাবে পরীক্ষার ইতিহাস মুছতে চান?")) {
+                appState.examHistory = [];
+                saveState();
+                renderExamHistory();
+            }
+        }
+
+        // ================= DAILY TO-DO TASK SYSTEM =================
+        function renderDailyTasks() {
+            const listContainer = document.getElementById('todo-list-ul');
+            listContainer.innerHTML = '';
+
+            let doneCount = 0;
+            appState.dailyTasks.forEach((t, idx) => {
+                if (t.completed) doneCount++;
+
+                const li = document.createElement('li');
+                li.className = "flex items-center justify-between p-3 bg-slate-100/50 dark:bg-slate-900/30 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 transition-all";
+                li.innerHTML = `
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" onchange="toggleDailyTask(${idx})" ${t.completed ? 'checked' : ''} class="w-4.5 h-4.5 rounded text-rose-500 bg-slate-50 border-slate-300 focus:ring-rose-500 dark:bg-slate-900 dark:border-slate-800">
+                        <span class="text-xs ${t.completed ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'} font-medium">
+                            ${t.text}
+                        </span>
+                    </label>
+                    <button onclick="deleteDailyTask(${idx})" class="p-1 text-slate-400 hover:text-rose-500 transition-colors">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                `;
+                listContainer.appendChild(li);
+            });
+
+            const total = appState.dailyTasks.length;
+            const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+            document.getElementById('todo-pct').innerText = `${pct}% সম্পন্ন`;
+
+            if (total === 0) {
+                listContainer.innerHTML = `<li class="text-center py-6 text-slate-400 text-xs">আজকের কোনো টাস্ক সেট করা নেই।</li>`;
+            }
+        }
+
+        function addNewTask() {
+            const input = document.getElementById('new-task-input');
+            const val = input.value.trim();
+            if (!val) return;
+
+            appState.dailyTasks.push({
+                text: val,
+                completed: false
+            });
+            input.value = '';
+            saveState();
+            renderDailyTasks();
+        }
+
+        function toggleDailyTask(idx) {
+            appState.dailyTasks[idx].completed = !appState.dailyTasks[idx].completed;
+            saveState();
+            renderDailyTasks();
+        }
+
+        function deleteDailyTask(idx) {
+            appState.dailyTasks.splice(idx, 1);
+            saveState();
+            renderDailyTasks();
+        }
+
+        // ================= INTERACTIVE STUDY CALENDAR =================
+        function renderCalendar() {
+            const calendarGrid = document.getElementById('calendar-grid');
+            calendarGrid.innerHTML = '';
+
+            const totalDays = 30;
+            const offset = 2; 
+
+            for (let i = 0; i < offset; i++) {
+                const spacer = document.createElement('div');
+                calendarGrid.appendChild(spacer);
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dayDiv = document.createElement('div');
+                const isStudiedDay = day % 3 !== 0; 
+                
+                dayDiv.className = `p-2 rounded-xl text-center font-bold text-xs select-none ${
+                    isStudiedDay 
+                    ? 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' 
+                    : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400'
+                }`;
+                dayDiv.innerText = day;
+                calendarGrid.appendChild(dayDiv);
+            }
+        }
+
+        // ================= ANALYTICS & VISUAL CHARTS =================
+        let subjectProgressChartInstance = null;
+        let weeklyTrendChartInstance = null;
+
+        function initCharts() {
+            const labels = ["উদ্ভিদবিজ্ঞান", "প্রাণীবিজ্ঞান", "রসায়ন ১ম", "রসায়ন ২য়", "পদার্থ ১ম", "পদার্থ ২য়", "ইংরেজী", "জিকে", "মূল্যবোধ"];
+            const subjectKeys = ["bio1", "bio2", "chem1", "chem2", "phy1", "phy2", "eng", "gk", "values"];
+            
+            const datasetsData = subjectKeys.map(subjKey => {
+                const chapters = subjectsData[subjKey].chapters;
+                let doneCount = 0;
+                let totalTasks = chapters.length * taskKeys.length;
+
+                chapters.forEach((chap, idx) => {
+                    const chapKey = `${subjKey}_${idx}`;
+                    const progress = appState.chaptersProgress[chapKey] || {};
+                    taskKeys.forEach(tk => { if (progress[tk]) doneCount++; });
+                });
+
+                return totalTasks > 0 ? Math.round((doneCount / totalTasks) * 100) : 0;
+            });
+
+            if (subjectProgressChartInstance) subjectProgressChartInstance.destroy();
+            if (weeklyTrendChartInstance) weeklyTrendChartInstance.destroy();
+
+            const ctx1 = document.getElementById('subjectProgressChart').getContext('2d');
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+            const labelColor = isDark ? '#f1f5f9' : '#334155';
+
+            subjectProgressChartInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'প্রস্তুতির হার %',
+                        data: datasetsData,
+                        backgroundColor: 'rgba(225, 29, 72, 0.85)',
+                        borderColor: '#e11d48',
+                        borderWidth: 1.5,
+                        borderRadius: 12
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: gridColor },
+                            ticks: { color: labelColor }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: labelColor }
+                        }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('weeklyTrendChart').getContext('2d');
+            weeklyTrendChartInstance = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ["শনি", "রবি", "সোম", "মঙ্গল", "বুধ", "বৃহ", "শুক্র"],
+                    datasets: [{
+                        label: 'অধ্যয়ন ঘন্টা',
+                        data: [7.5, 8.2, 9, 6.8, 10, 8.5, 5],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#4f46e5'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: { color: labelColor }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: labelColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ================= RESOURCES & NOTES =================
+        function saveQuickNote() {
+            const txt = document.getElementById('quick-note-text');
+            const val = txt.value.trim();
+            if (!val) return;
+
+            const noteId = Date.now().toString();
+            if (!appState.personalNotes) appState.personalNotes = [];
+            appState.personalNotes.unshift({
+                id: noteId,
+                text: val,
+                date: new Date().toLocaleDateString('bn-BD')
+            });
+
+            txt.value = '';
+            saveState();
+            renderNotesList();
+        }
+
+        function renderNotesList() {
+            const container = document.getElementById('notes-display-container');
+            container.innerHTML = '';
+
+            const notes = appState.personalNotes || [];
+            notes.forEach((n) => {
+                const noteDiv = document.createElement('div');
+                noteDiv.className = "p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 space-y-1";
+                noteDiv.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] text-slate-400 font-bold">${n.date}</span>
+                        <button onclick="deleteNote('${n.id}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                    <p class="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">${n.text}</p>
+                `;
+                container.appendChild(noteDiv);
+            });
+
+            if (notes.length === 0) {
+                container.innerHTML = `<p class="text-[11px] text-slate-400 text-center py-4">কোনো নোট পাওয়া যায়নি।</p>`;
+            }
+        }
+
+        function deleteNote(id) {
+            appState.personalNotes = (appState.personalNotes || []).filter(n => n.id !== id);
+            saveState();
+            renderNotesList();
+        }
+
+        // ================= QUICK MODAL SEARCH SYSTEM =================
+        function toggleQuickSearchModal() {
+            const modal = document.getElementById('quick-search-modal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('modal-search-input').focus();
+                searchModalChapters("");
+            }
+        }
+
+        function searchModalChapters(query) {
+            const resultsDiv = document.getElementById('modal-search-results');
+            resultsDiv.innerHTML = '';
+            query = query.toLowerCase();
+
+            Object.keys(subjectsData).forEach(subjKey => {
+                const subject = subjectsData[subjKey];
+                subject.chapters.forEach((chap, idx) => {
+                    if (query && !chap.toLowerCase().includes(query)) return;
+
+                    const chapKey = `${subjKey}_${idx}`;
+                    const div = document.createElement('div');
+                    div.className = "p-3 bg-slate-100/50 dark:bg-slate-900/30 hover:bg-rose-500/10 dark:hover:bg-rose-500/10 border border-slate-200/40 dark:border-slate-800/40 rounded-2xl flex justify-between items-center cursor-pointer transition-colors";
+                    div.innerHTML = `
+                        <div>
+                            <span class="text-[9px] text-rose-500 font-bold uppercase block">${subject.name}</span>
+                            <span class="text-xs font-semibold text-slate-800 dark:text-slate-100">${chap}</span>
+                        </div>
+                        <span class="text-slate-400"><i class="fa-solid fa-angle-right"></i></span>
+                    `;
+                    div.onclick = () => {
+                        toggleQuickSearchModal();
+                        switchView('subjects');
+                        filterSubject(subjKey);
+                    };
+                    resultsDiv.appendChild(div);
+                });
+            });
+
+            if (resultsDiv.innerHTML === '') {
+                resultsDiv.innerHTML = `<div class="text-xs text-center text-slate-400 py-4">কোনো অধ্যায় পাওয়া যায়নি।</div>`;
+            }
+        }
+
+        // ================= DARK/LIGHT THEME TOGGLE =================
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                appState.theme = 'light';
+                document.getElementById('theme-icon').className = "fa-solid fa-moon";
+            } else {
+                document.documentElement.classList.add('dark');
+                appState.theme = 'dark';
+                document.getElementById('theme-icon').className = "fa-solid fa-sun";
+            }
+            saveState();
+            if (!document.getElementById('view-analytics').classList.contains('hidden')) {
+                initCharts();
+            }
+        }
+
+        function applyTheme() {
+            if (appState.theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon').className = "fa-solid fa-sun";
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-icon').className = "fa-solid fa-moon";
+            }
+        }
+
+        // ================= PAGE INITIALIZATION =================
+        window.onload = function() {
+            loadState();
+            applyTheme();
+            updateMetricsAndUI();
+            
+            // Persistent Target Date Countdown
+            const targetDate = new Date(appState.examTargetDate);
+            
+            setInterval(() => {
+                const now = new Date();
+                const diff = targetDate - now;
+                
+                if (diff <= 0) {
+                    document.getElementById('exam-countdown').innerText = "পরীক্ষা চলমান!";
+                    return;
+                }
+                
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                const countdownEl = document.getElementById('exam-countdown');
+                if (countdownEl) {
+                    countdownEl.innerText = `${days} দিন ${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                }
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
+
